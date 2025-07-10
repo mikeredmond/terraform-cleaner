@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/mikeredmond/terraform-cleaner/terraform"
 	"github.com/spf13/cobra"
-	"github.com/sylwit/terraform-cleaner/terraform"
 )
 
 var rootCmd = &cobra.Command{
