@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 type ModuleUsage struct {
@@ -42,12 +43,34 @@ func NewModuleUsage(path string) (*ModuleUsage, error) {
 	return m, err
 }
 
-func ListTfModules(path string) (map[string]bool, error) {
+func isHidden(path string) bool {
+	parts := strings.Split(path, string(filepath.Separator))
+	for _, part := range parts {
+		if part == "." || part == ".." {
+			continue
+		}
+		if strings.HasPrefix(part, ".") {
+			return true
+		}
+	}
+	return false
+}
+
+func ListTfModules(path string, ignoreHiddenDirs bool) (map[string]bool, error) {
 	var directories = make(map[string]bool)
 
 	err := filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+
+		if ignoreHiddenDirs {
+			if isHidden(path) {
+				if d.IsDir() {
+					log.Debugf("Skipping: %v", d.Name())
+					return fs.SkipDir
+				}
+			}
 		}
 
 		if filepath.Ext(path) == ".tf" {
@@ -166,15 +189,15 @@ func (m ModuleUsage) Display(dType DisplayType, unusedOnly bool) error {
 	}
 
 	if !unusedOnly || (unusedOnly && len(locals)+len(variables) > 0) {
-		fmt.Printf("\n \U0001F680 Module: %s\n", m.Path)
+		fmt.Printf("\n\U0001F680 Module: %s\n", m.Path)
 	}
 
 	if dType == All || dType == Variables {
 		if !unusedOnly || (unusedOnly && len(variables) > 0) {
-			fmt.Printf(" \U0001F449 %d variables found\n", len(variables))
+			fmt.Printf("\U0001F449 %d variables found\n", len(variables))
 		}
 		for name, count := range variables {
-			fmt.Printf("%s : %d\n", name, count)
+			fmt.Printf(" %s : %d\n", name, count)
 		}
 	}
 
@@ -183,7 +206,7 @@ func (m ModuleUsage) Display(dType DisplayType, unusedOnly bool) error {
 			fmt.Printf("\U0001F449 %d locals found\n", len(locals))
 		}
 		for name, count := range locals {
-			fmt.Printf("%s : %d\n", name, count)
+			fmt.Printf(" %s : %d\n", name, count)
 		}
 
 	}

@@ -6,16 +6,17 @@ import (
 )
 
 func TestListTfModules(t *testing.T) {
-	t.Run("must found 3 modules", func(t *testing.T) {
+	t.Run("must found 4 modules", func(t *testing.T) {
 		path := "./testdata"
 
-		result, err := ListTfModules(path)
+		result, err := ListTfModules(path, false)
 		assert.Equal(t, err, nil)
-		assert.Equal(t, len(result), 3)
+		assert.Equal(t, len(result), 4)
 
 		assert.Contains(t, result, "testdata")
 		assert.Contains(t, result, "testdata/tf")
 		assert.Contains(t, result, "testdata/tf/1")
+		assert.Contains(t, result, "testdata/.hidden-tf-files")
 	})
 }
 
@@ -36,5 +37,19 @@ func TestNewModuleUsage(t *testing.T) {
 		assert.Equal(t, 1, moduleUsage.Locals["tags"])
 		assert.Equal(t, 0, moduleUsage.Locals["dummy"])
 		assert.Equal(t, 0, moduleUsage.Locals["dummy2"])
+	})
+}
+
+func TestListTfIgnoreHiddenDirs(t *testing.T) {
+	t.Run("must found 3 modules", func(t *testing.T) {
+		path := "./testdata"
+
+		result, err := ListTfModules(path, true)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, len(result), 3)
+
+		assert.Contains(t, result, "testdata")
+		assert.Contains(t, result, "testdata/tf")
+		assert.Contains(t, result, "testdata/tf/1")
 	})
 }

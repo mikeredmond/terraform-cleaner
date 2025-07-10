@@ -22,6 +22,7 @@ func rootCmdExec(cmd *cobra.Command, args []string) error {
 	fUnusedOnly, _ := cmd.Flags().GetBool("unused-only")
 	fVariables, _ := cmd.Flags().GetBool("variables")
 	fLocals, _ := cmd.Flags().GetBool("locals")
+	fIgnoreHiddenDirs, _ := cmd.Flags().GetBool("ignore-hidden-dirs")
 
 	dType := terraform.All
 	if fVariables && !fLocals {
@@ -30,7 +31,7 @@ func rootCmdExec(cmd *cobra.Command, args []string) error {
 		dType = terraform.Locals
 	}
 
-	modules, err := terraform.ListTfModules(dir)
+	modules, err := terraform.ListTfModules(dir, fIgnoreHiddenDirs)
 	if err != nil {
 		return err
 	}
@@ -46,8 +47,7 @@ func rootCmdExec(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	fmt.Printf("\n%d modules processed", len(modules))
-
+	fmt.Printf("\n%d modules processed\n", len(modules))
 	return nil
 }
 
@@ -59,4 +59,5 @@ func init() {
 	rootCmd.Flags().Bool("unused-only", false, "Display only unused values")
 	rootCmd.Flags().Bool("variables", false, "Display only variables")
 	rootCmd.Flags().Bool("locals", false, "Display only locals")
+	rootCmd.Flags().Bool("ignore-hidden-dirs", false, "Ignore hidden directories")
 }
