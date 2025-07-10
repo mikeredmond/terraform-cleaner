@@ -1,4 +1,4 @@
-module github.com/sylwit/terraform-cleaner
+module github.com/mikeredmond/terraform-cleaner
 
 go 1.19
 
